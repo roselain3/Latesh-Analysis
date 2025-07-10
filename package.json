@@ -1,0 +1,37 @@
+{
+  "name": "latesh-analysis",
+  "version": "1.0.0",
+  "description": "Web server that provides accurate predictions for upcoming FRC matches",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node start.js",
+    "bot": "node bot.js",
+    "server": "node server.js",
+    "setup-check": "node setup-check.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roselain3/Latesh-Analysis.git"
+  },
+  "keywords": [
+    "Discord",
+    "Bot"
+  ],
+  "author": "Laney Williams and Ritesh Raj Arul Selvan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/roselain3/Latesh-Analysis/issues"
+  },
+  "homepage": "https://github.com/roselain3/Latesh-Analysis#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.15.0",
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3"
+  }
+}

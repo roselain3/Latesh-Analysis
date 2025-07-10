@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latesh Analysis Bot Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: #5865f2;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-online { background-color: #57f287; }
+        .status-offline { background-color: #ed4245; }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✓";
+            color: #57f287;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .api-endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #5865f2;
+        }
+        
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .command-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #ff6b35;
+        }
+        
+        .command-card h4 {
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Latesh Analysis Bot</h1>
+            <p>Advanced Discord Bot for Webhook Management & FRC Analysis</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <h3>🔗 Webhook Management</h3>
+                <ul class="feature-list">
+                    <li>Create and manage webhooks</li>
+                    <li>Send custom messages</li>
+                    <li>Rich embed support</li>
+                    <li>Message forwarding</li>
+                    <li>URL validation</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>🤖 FRC Integration</h3>
+                <ul class="feature-list">
+                    <li>Match predictions</li>
+                    <li>Team analysis</li>
+                    <li>Event tracking</li>
+                    <li>Real-time updates</li>
+                    <li>Performance metrics</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h3>📊 System Status</h3>
+                <div class="status">
+                    <div class="status-dot status-online"></div>
+                    <span>Bot Online</span>
+                </div>
+                <div class="status">
+                    <div class="status-dot status-online"></div>
+                    <span>Web Server Active</span>
+                </div>
+                <div class="status">
+                    <div class="status-dot status-online"></div>
+                    <span>APIs Connected</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>🚀 API Endpoints</h3>
+            <div class="api-endpoint">
+                <strong>GET /</strong> - Bot information and status
+            </div>
+            <div class="api-endpoint">
+                <strong>GET /health</strong> - Health check endpoint
+            </div>
+            <div class="api-endpoint">
+                <strong>POST /webhook</strong> - Receive external webhooks
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>💬 Available Commands</h3>
+            <div class="commands-grid">
+                <div class="command-card">
+                    <h4>/webhook-send</h4>
+                    <p>Send messages through webhooks with custom usernames and avatars</p>
+                </div>
+                <div class="command-card">
+                    <h4>/webhook-embed</h4>
+                    <p>Create and send rich embeds through webhooks</p>
+                </div>
+                <div class="command-card">
+                    <h4>/webhook-create</h4>
+                    <p>Create new webhooks for channels</p>
+                </div>
+                <div class="command-card">
+                    <h4>/forward-setup</h4>
+                    <p>Setup message forwarding between channels</p>
+                </div>
+                <div class="command-card">
+                    <h4>/frc-match</h4>
+                    <p>Get FRC match predictions and analysis</p>
+                </div>
+                <div class="command-card">
+                    <h4>/help</h4>
+                    <p>Display bot help and command information</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Made with ❤️ by Laney Williams and Ritesh Raj Arul Selvan</p>
+            <p>Powered by Discord.js • Express.js • The Blue Alliance API</p>
+        </div>
+    </div>
+    
+    <script>
+        // Simple JavaScript to update status in real-time
+        async function checkStatus() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    document.querySelectorAll('.status-dot').forEach(dot => {
+                        dot.className = 'status-dot status-online';
+                    });
+                }
+            } catch (error) {
+                document.querySelectorAll('.status-dot').forEach(dot => {
+                    dot.className = 'status-dot status-offline';
+                });
+            }
+        }
+        
+        // Check status every 30 seconds
+        setInterval(checkStatus, 30000);
+        checkStatus(); // Initial check
+    </script>
+</body>
+</html>
