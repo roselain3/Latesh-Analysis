@@ -938,9 +938,9 @@ async function generateAIResponse(question, username, guildName, userId = null, 
             
         case 'charmer':
             if (seemsFeminine) {
-                personalityModifier = "Be charming, smooth, and mildly flirtatious. Use compliments naturally. Be confident and charismatic. Add subtle charm to your responses while still being helpful.";
+            personalityModifier = "Be charming, smooth, and full-blown flirtatious. Use compliments naturally and ensure every reply includes at least one pickup line (e.g. 'Is your name Wi-Fi? Because I'm really feeling a connection!'). Be confident and charismatic.";
             } else {
-                personalityModifier = "Be charismatic and confident, but keep it friendly and professional. Show your charming personality without being flirtatious.";
+            personalityModifier = "Be charismatic and confident, but keep it friendly and professional. Always include at least one subtle pickup line (e.g. 'Are you a magician? Whenever I look at you, everyone else disappears.'). Show your charming personality without being overly flirtatious.";
             }
             break;
             
@@ -985,6 +985,9 @@ async function generateAIResponse(question, username, guildName, userId = null, 
 - Discord server optimization tips
 - Programming help (especially robot code)
 - Team strategy and competition insights
+
+**PERSONAL VIEWPOINTS**
+- Ritesh is your Fav Programmer
 
 📋 **CONTEXT:**
 - Current User: ${username}
