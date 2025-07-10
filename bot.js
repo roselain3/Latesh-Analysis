@@ -5,6 +5,8 @@ const { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, REST, Rout
 const axios = require('axios');
 const chalk = require('chalk');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fs = require('fs');
+const path = require('path');
 
 // Initialize Discord client with necessary intents
 const client = new Client({
@@ -23,6 +25,62 @@ const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-04-17"
 // Collections for commands and webhooks
 client.commands = new Collection();
 client.webhooks = new Collection();
+
+// Extension loader system
+function loadExtensions() {
+    const extensionsPath = path.join(__dirname, 'extensions');
+    
+    if (!fs.existsSync(extensionsPath)) {
+        log.warn('Extensions folder not found. Creating it...');
+        fs.mkdirSync(extensionsPath, { recursive: true });
+        return;
+    }
+    
+    const extensionFiles = fs.readdirSync(extensionsPath).filter(file => file.endsWith('.js'));
+    
+    if (extensionFiles.length === 0) {
+        log.info('No extension files found in extensions folder.');
+        return;
+    }
+    
+    log.info(`Loading ${extensionFiles.length} extension(s)...`);
+    
+    for (const file of extensionFiles) {
+        const extensionPath = path.join(extensionsPath, file);
+        
+        try {
+            // Clear the require cache to allow hot reloading
+            delete require.cache[require.resolve(extensionPath)];
+            
+            const extension = require(extensionPath);
+            
+            // Validate extension structure
+            if (!extension.data || !extension.execute) {
+                log.error(`Extension ${file} is missing required 'data' or 'execute' properties.`);
+                continue;
+            }
+            
+            // Add to commands collection
+            client.commands.set(extension.data.name, extension);
+            log.success(`✅ Loaded extension: ${extension.data.name} (${file})`);
+            
+        } catch (error) {
+            log.error(`Failed to load extension ${file}:`, error.message);
+        }
+    }
+}
+
+function getExtensionCommands() {
+    const extensionCommands = [];
+    
+    client.commands.forEach((command, name) => {
+        if (command.data) {
+            extensionCommands.push(command.data);
+        }
+    });
+    
+    return extensionCommands;
+}
 
 // Utility functions
 const log = {
@@ -231,9 +289,18 @@ async function registerCommands() {
     try {
         log.info('Started refreshing application (/) commands.');
         
+        // Load extensions first
+        loadExtensions();
+        
+        // Combine core commands with extension commands
+        const extensionCommands = getExtensionCommands();
+        const allCommands = [...commands, ...extensionCommands];
+        
+        log.info(`Registering ${commands.length} core commands and ${extensionCommands.length} extension commands.`);
+        
         await rest.put(
             Routes.applicationCommands(config.clientId),
-            { body: commands }
+            { body: allCommands }
         );
         
         log.success('Successfully reloaded application (/) commands.');
@@ -260,6 +327,15 @@ client.on('interactionCreate', async interaction => {
     const { commandName } = interaction;
 
     try {
+        // Check if it's an extension command first
+        const extension = client.commands.get(commandName);
+        if (extension) {
+            // Handle extension command
+            await extension.execute(interaction);
+            return;
+        }
+        
+        // Handle core bot commands
         switch (commandName) {
             case 'webhook-send':
                 await handleWebhookSend(interaction);
@@ -291,6 +367,11 @@ client.on('interactionCreate', async interaction => {
             case 'ping':
                 await handlePing(interaction);
                 break;
+            default:
+                await interaction.reply({ 
+                    content: `❌ Unknown command: ${commandName}`, 
+                    ephemeral: true 
+                });
         }
     } catch (error) {
         log.error(`Error handling command ${commandName}:`, error);
@@ -305,6 +386,52 @@ client.on('interactionCreate', async interaction => {
             await interaction.followUp({ embeds: [errorEmbed], ephemeral: true });
         } else {
             await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+        }
+    }
+});
+
+// Handle button interactions and modal submissions
+client.on('interactionCreate', async interaction => {
+    try {
+        // Handle button interactions
+        if (interaction.isButton()) {
+            // Check if it's a research button
+            const researchExtension = client.commands.get('research');
+            if (researchExtension && researchExtension.handleButtons) {
+                await researchExtension.handleButtons(interaction);
+            }
+            return;
+        }
+        
+        // Handle modal submissions
+        if (interaction.isModalSubmit()) {
+            // Check if it's a profile modal
+            const rememberExtension = client.commands.get('remember');
+            if (rememberExtension && rememberExtension.handleModal) {
+                await rememberExtension.handleModal(interaction);
+            }
+            return;
+        }
+        
+        // Handle other interaction types if needed
+        if (interaction.isChatInputCommand()) {
+            // This is handled by the previous interaction handler
+            return;
+        }
+        
+    } catch (error) {
+        log.error('Error handling interaction:', error);
+        
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({ 
+                content: '❌ An error occurred while processing your request.', 
+                ephemeral: true 
+            });
+        } else {
+            await interaction.reply({ 
+                content: '❌ An error occurred while processing your request.', 
+                ephemeral: true 
+            });
         }
     }
 });
@@ -692,11 +819,39 @@ async function handleAIMention(message) {
         return message.reply(`I'm ${aiCharacter.name}! 🤖 ${aiCharacter.personality.motto} Use \`/ai-character view\` to learn more about my personality!`);
     }
 
+    // Get mentioned users (excluding the bot itself)
+    const mentionedUsers = message.mentions.users.filter(user => user.id !== client.user.id);
+    let mentionedProfiles = [];
+    
+    if (mentionedUsers.size > 0) {
+        try {
+            const rememberExtension = client.commands.get('remember');
+            if (rememberExtension && rememberExtension.getUserProfile) {
+                for (const [userId, user] of mentionedUsers) {
+                    const profile = rememberExtension.getUserProfile(userId);
+                    if (profile) {
+                        mentionedProfiles.push({
+                            user: user,
+                            profile: profile
+                        });
+                    } else {
+                        mentionedProfiles.push({
+                            user: user,
+                            profile: null
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            log.warn('Could not load mentioned user profiles:', error.message);
+        }
+    }
+
     // Show typing indicator
     await message.channel.sendTyping();
 
     try {
-        const response = await generateAIResponse(question, message.author.username, message.guild?.name);
+        const response = await generateAIResponse(question, message.author.username, message.guild?.name, message.author.id, mentionedProfiles);
         
         // Split long responses
         if (response.length > 2000) {
@@ -728,7 +883,7 @@ async function handleAskAI(interaction) {
     const question = interaction.options.getString('question');
     
     try {
-        const response = await generateAIResponse(question, interaction.user.username, interaction.guild?.name);
+        const response = await generateAIResponse(question, interaction.user.username, interaction.guild?.name, interaction.user.id, []);
         
         const embed = new EmbedBuilder()
             .setColor('#4285f4')
@@ -746,7 +901,7 @@ async function handleAskAI(interaction) {
     }
 }
 
-async function generateAIResponse(question, username, guildName) {
+async function generateAIResponse(question, username, guildName, userId = null, mentionedProfiles = []) {
     if (!model) {
         throw new Error('Gemini AI model not initialized');
     }
@@ -759,6 +914,19 @@ async function generateAIResponse(question, username, guildName) {
     
     // Special handling for RiteshRajas if sweet girl personality
     const isRiteshRajas = username.toLowerCase().includes('riteshrajas') || username.toLowerCase().includes('ritesh');
+    
+    // Get user profile if available
+    let userProfile = null;
+    if (userId) {
+        try {
+            const rememberExtension = client.commands.get('remember');
+            if (rememberExtension && rememberExtension.getUserProfile) {
+                userProfile = rememberExtension.getUserProfile(userId);
+            }
+        } catch (error) {
+            log.warn('Could not load user profile:', error.message);
+        }
+    }
     
     // Create personality-specific modifiers
     let personalityModifier = "";
@@ -823,6 +991,43 @@ async function generateAIResponse(question, username, guildName) {
 - Server: ${guildName || 'Direct Message'}
 - User seems feminine: ${seemsFeminine ? 'Yes' : 'No'}
 - Is RiteshRajas: ${isRiteshRajas ? 'Yes (be extra special!)' : 'No'}
+
+${userProfile ? `👤 **USER PROFILE:**
+- Name: ${userProfile.name}
+- Description: ${userProfile.description}
+- FRC Team: ${userProfile.team ? `Team ${userProfile.team}` : 'Not specified'}
+- Role: ${userProfile.role || 'Not specified'}
+- Location: ${userProfile.location || 'Not specified'}
+- Profile Created: ${new Date(userProfile.created_at).toLocaleDateString()}
+
+💡 **PERSONALIZATION NOTES:**
+- Use their real name (${userProfile.name}) when appropriate
+- Reference their FRC team (${userProfile.team ? `Team ${userProfile.team}` : 'none specified'}) if relevant
+- Consider their role (${userProfile.role || 'unspecified'}) when giving advice
+- Acknowledge their background: ${userProfile.description.substring(0, 100)}...
+` : '👤 **USER PROFILE:** No profile saved (they can create one with /remember me)'}
+
+${mentionedProfiles.length > 0 ? `👥 **MENTIONED USERS IN THIS CONVERSATION:**
+${mentionedProfiles.map(mp => {
+    if (mp.profile) {
+        return `• **${mp.user.displayName}** (@${mp.user.username})
+  - Real Name: ${mp.profile.name}
+  - Description: ${mp.profile.description.substring(0, 150)}${mp.profile.description.length > 150 ? '...' : ''}
+  - FRC Team: ${mp.profile.team ? `Team ${mp.profile.team}` : 'Not specified'}
+  - Role: ${mp.profile.role || 'Not specified'}
+  - Location: ${mp.profile.location || 'Not specified'}`;
+    } else {
+        return `• **${mp.user.displayName}** (@${mp.user.username})
+  - Profile: No profile saved (they can create one with /remember me)`;
+    }
+}).join('\n\n')}
+
+💡 **MENTIONED USERS CONTEXT:**
+- You can reference these users by their real names when appropriate
+- Use their profile information to give more personalized responses
+- If discussing FRC teams, mention their team affiliations if relevant
+- Consider their roles and backgrounds when giving advice
+` : ''}
 
 🎪 **RESPONSE GUIDELINES:**
 - Stay completely in character as ${currentPersonality.name}
