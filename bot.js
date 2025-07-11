@@ -395,10 +395,28 @@ client.on('interactionCreate', async interaction => {
     try {
         // Handle button interactions
         if (interaction.isButton()) {
+            // Check if it's a lab game button
+            const labGameExtension = client.commands.get('latesh');
+            if (labGameExtension && labGameExtension.eventHandlers) {
+                const handled = await labGameExtension.eventHandlers.handleConversationStart(interaction, client);
+                if (handled) return;
+            }
+            
             // Check if it's a research button
             const researchExtension = client.commands.get('research');
             if (researchExtension && researchExtension.handleButtons) {
                 await researchExtension.handleButtons(interaction);
+            }
+            return;
+        }
+        
+        // Handle select menu interactions
+        if (interaction.isStringSelectMenu()) {
+            // Check if it's a lab game select menu
+            const labGameExtension = client.commands.get('latesh');
+            if (labGameExtension && labGameExtension.eventHandlers) {
+                const handled = await labGameExtension.eventHandlers.handleParticipantSelection(interaction);
+                if (handled) return;
             }
             return;
         }
@@ -445,6 +463,13 @@ client.on('interactionCreate', async interaction => {
 // Message forwarding and AI chat handler
 client.on('messageCreate', async message => {
     if (message.author.bot) return;
+    
+    // Check if lab game extension wants to handle this message
+    const labGameExtension = client.commands.get('latesh');
+    if (labGameExtension && labGameExtension.eventHandlers) {
+        const handled = await labGameExtension.eventHandlers.handleMessage(message, client);
+        if (handled) return;
+    }
     
     // Check if bot is mentioned
     if (message.mentions.has(client.user)) {
