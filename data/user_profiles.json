@@ -37,15 +37,15 @@
   },
   "690690814145200159": {
     "name": "Laney Williams",
-    "description": "I’m a blonde American, about 4'11\", and mostly pretty patient. I’d call myself an ambivert — I like being around people. I’ve got two dogs: Charlotte, who’s definitely my favorite, and Willy, a rescue who kind of bites me sometimes, so I’m a little scared of him. This is my second year in FEDS Robotics as a programmer, and I want to be on drive team. When I’m into something, I actually put effort into it. I’m not afraid to ask for help, and once someone tells me something, I usually don’t need to be reminded again. I know when to take things seriously and when it’s okay to laugh stuff off. I’m outgoing, kind of chaotic in a fun way, and I get a weird amount of joy from mildly irritating people — nothing mean, just enough to keep things interesting.",
+    "description": "(Written by Ritesh) I’m a blonde American and pretty patient.I’ve got two dogs: Charlotte, who’s definitely my favorite, and Willy, I’m a little scared of him. This is my second year in FEDS Robotics as a programmer, and I’m trying for Drive Team When I’m into something, I actually put effort into I’m not afraid to ask for help, and once someone tells me something, I usually don’t need to be reminded again. I know when to take things seriously and when it’s okay to laugh stuff off. I’m outgoing, kind of chaotic in a fun way, and I get a weird amount of joy from mildly irritating people — nothing mean, just enough to keep things interesting.",
     "team": "201",
-    "role": "Programmer, Member of Drive Team, Junior",
-    "location": "Michigan",
+    "role": "Programmer and Member of Drive Team",
+    "location": "Rochester Hills, Michigan",
     "discord_id": "690690814145200159",
     "discord_username": "lane7709",
     "discord_display_name": "laney",
     "created_at": "2025-07-10T19:14:02.986Z",
-    "updated_at": "2025-07-11T01:21:16.844Z"
+    "updated_at": "2025-07-11T03:14:10.795Z"
   },
   "841896957843996692": {
     "name": "David",
@@ -70,5 +70,17 @@
     "discord_display_name": "Ikshita",
     "created_at": "2025-07-11T01:17:02.680Z",
     "updated_at": "2025-07-11T01:17:02.680Z"
+  },
+  "1055219958214311937": {
+    "name": "Akilan Ganeshbabu",
+    "description": "Addicted to tecgh, nerd.",
+    "team": "201",
+    "role": "Student",
+    "location": null,
+    "discord_id": "1055219958214311937",
+    "discord_username": "phantomporter",
+    "discord_display_name": "PhantomJam",
+    "created_at": "2025-07-11T03:34:25.858Z",
+    "updated_at": "2025-07-11T03:36:08.434Z"
   }
 }
