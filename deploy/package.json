@@ -1,0 +1,25 @@
+{
+  "name": "latesh-analysis-deployment",
+  "version": "1.0.0",
+  "description": "Deployment configuration for Latesh Analysis Bot",
+  "main": "ecosystem.config.js",
+  "scripts": {
+    "deploy": "./deploy.sh",
+    "deploy:linode": "./linode-deploy.sh",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop latesh-bot",
+    "pm2:restart": "pm2 restart latesh-bot",
+    "pm2:delete": "pm2 delete latesh-bot",
+    "pm2:logs": "pm2 logs latesh-bot"
+  },
+  "keywords": ["discord", "bot", "frc", "deployment", "docker", "pm2"],
+  "author": "Ritesh Raj Arul Selvan, Laney Williams",
+  "license": "MIT",
+  "devDependencies": {
+    "pm2": "^5.3.0"
+  }
+}
