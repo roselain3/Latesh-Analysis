@@ -12,14 +12,14 @@ module.exports = {
             subcommand
                 .setName('me')
                 .setDescription('Create/update your personal profile'))
-        .addSubcommand(subcommand =>
-            subcommand
-                .setName('view')
-                .setDescription('View a user\'s profile')
-                .addUserOption(option =>
-                    option.setName('user')
-                        .setDescription('User to view profile of')
-                        .setRequired(false)))
+        // .addSubcommand(subcommand =>
+        //     subcommand
+        //         .setName('view')
+        //         .setDescription('View a user\'s profile')
+        //         .addUserOption(option =>
+        //             option.setName('user')
+        //                 .setDescription('User to view profile of')
+        //                 .setRequired(false)))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('list')
