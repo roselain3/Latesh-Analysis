@@ -410,6 +410,12 @@ client.on('interactionCreate', async interaction => {
             if (rememberExtension && rememberExtension.handleModal) {
                 await rememberExtension.handleModal(interaction);
             }
+            
+            // Check if it's an event modal
+            const eventExtension = client.commands.get('event');
+            if (eventExtension && eventExtension.handleModal) {
+                await eventExtension.handleModal(interaction);
+            }
             return;
         }
         
@@ -472,7 +478,7 @@ async function handleWebhookSend(interaction) {
     
     const message = interaction.options.getString('message');
     const webhookUrl = interaction.options.getString('webhook-url') || config.defaultWebhook;
-    const username = interaction.options.getString('username') || 'Latesh Bot';
+    const username = interaction.options.getString('username') || 'Laney Wills';
     const avatar = interaction.options.getString('avatar');
     
     if (!webhookUrl) {
@@ -513,7 +519,7 @@ async function handleWebhookEmbed(interaction) {
     const description = interaction.options.getString('description');
     const color = interaction.options.getString('color') || '0099ff';
     const webhookUrl = interaction.options.getString('webhook-url') || config.defaultWebhook;
-    const username = interaction.options.getString('username') || 'Latesh Bot';
+    const username = interaction.options.getString('username') || 'Boss';
     
     if (!webhookUrl) {
         return interaction.editReply('❌ No webhook URL provided and no default webhook configured.');
@@ -558,14 +564,31 @@ async function handleWebhookCreate(interaction) {
     await interaction.deferReply({ ephemeral: true });
     
     const name = interaction.options.getString('name');
-    const avatar = interaction.options.getString('avatar');
+    const avatarInput = interaction.options.getString('avatar');
+    
+    // Validate avatar URL if provided
+    let avatar = null;
+    if (avatarInput) {
+        // Check if it's a valid URL
+        const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i;
+        if (urlPattern.test(avatarInput)) {
+            avatar = avatarInput;
+        } else {
+            return interaction.editReply('❌ Invalid avatar URL. Please provide a valid image URL (jpg, jpeg, png, gif, or webp).');
+        }
+    }
     
     try {
-        const webhook = await interaction.channel.createWebhook({
+        const webhookOptions = {
             name: name,
-            avatar: avatar,
             reason: `Created by ${interaction.user.tag} via Latesh Bot`
-        });
+        };
+        
+        if (avatar) {
+            webhookOptions.avatar = avatar;
+        }
+        
+        const webhook = await interaction.channel.createWebhook(webhookOptions);
         
         const embed = new EmbedBuilder()
             .setColor('#00ff00')
@@ -581,7 +604,20 @@ async function handleWebhookCreate(interaction) {
         await interaction.editReply({ embeds: [embed] });
     } catch (error) {
         log.error('Webhook creation error:', error);
-        await interaction.editReply('❌ Failed to create webhook. Check bot permissions.');
+        
+        let errorMessage = '❌ Failed to create webhook. ';
+        
+        if (error.code === 50013) {
+            errorMessage += 'Missing permissions. Ensure the bot has "Manage Webhooks" permission.';
+        } else if (error.code === 50001) {
+            errorMessage += 'Missing access. Check if the bot can access this channel.';
+        } else if (error.code === 30007) {
+            errorMessage += 'Maximum number of webhooks reached for this channel (10 max).';
+        } else {
+            errorMessage += `Error: ${error.message}`;
+        }
+        
+        await interaction.editReply(errorMessage);
     }
 }
 
